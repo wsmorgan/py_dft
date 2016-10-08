@@ -18,8 +18,8 @@ except ImportError:
 
 from os import path
 setup(name='pydft',
-      version='0.0.0',
-      description='Basis expansion for 1D quantum potentials',
+      version='0.0.1',
+      description='Numerical DFT code in python.',
       long_description= "" if not path.isfile("README.md") else read_md('README.md'),
       author='Wiley S Morgan',
       author_email='wsmorgan@gmail.com',
@@ -33,7 +33,7 @@ setup(name='pydft',
           "numpy",
       ],
       packages=['pydft'],
-      scripts=['pydft/'],
+      scripts=['pydft/dft.py'],
       package_data={'pydft': []},
       include_package_data=True,
       classifiers=[
