@@ -195,3 +195,96 @@ def test_charge_dist():
     coeffs = [1]
     with pytest.raises(ValueError):
         charge_dist(s,R,coeffs,sigmas)
+
+def test_O():
+    """Test the generation of the O operator.
+    """
+
+    from pydft.poisson import _O_operator
+
+    R = [[0.5,0.5,-0.5],[0.5,-0.5,0.5],[-0.5,0.5,0.5]]
+    s = [2,4,5]
+    out = np.identity(np.prod(s))*np.linalg.det(R)
+    v = np.random.normal(0,0.1,40)
+    assert np.allclose(_O_operator(s,R,v),out*v)
+
+    R = [[1,0,0],[0,2,0],[0,0,4]]
+    s = [1,5,6]
+    out = np.identity(np.prod(s))*np.linalg.det(R)
+    v = np.random.normal(0.1,0.5,30)
+    assert np.allclose(_O_operator(s,R,v),out*v)
+
+    R = [[2.5,2.5,-2.5],[0.5,-0.5,0.5],[-1.5,1.5,1.5]]
+    s = [10,2,6]
+    out = np.identity(np.prod(s))*np.linalg.det(R)
+    v = np.random.normal(0,0.25,120)
+    assert np.allclose(_O_operator(s,R,v),out*v)    
+
+def test_L():
+    """Tests the L operator.
+    """
+    from pydft.poisson import _L_operator, _generate_G, _find_Gsqu
+
+    R = [[0.5,0.5,-0.5],[0.5,-0.5,0.5],[-0.5,0.5,0.5]]
+    s = [2,4,5]
+    G = _generate_G(R,s)
+    G2 = _find_Gsqu(G)
+    L = -np.linalg.det(R)*np.diag(G2)
+    v = np.random.normal(0,0.1,40)
+    assert np.allclose(_L_operator(s,R,v),L*v)
+
+    R = [[1,0,0],[0,2,0],[0,0,4]]
+    s = [1,5,6]
+    G = _generate_G(R,s)
+    G2 = _find_Gsqu(G)
+    L = -np.linalg.det(R)*np.diag(G2)
+    v = np.random.normal(0.1,0.5,30)
+    assert np.allclose(_L_operator(s,R,v),L*v)
+
+    R = [[2.5,2.5,-2.5],[0.5,-0.5,0.5],[-1.5,1.5,1.5]]
+    s = [10,2,6]
+    G = _generate_G(R,s)
+    G2 = _find_Gsqu(G)
+    L = -np.linalg.det(R)*np.diag(G2)
+    v = np.random.normal(0,0.25,120)
+    assert np.allclose(_L_operator(s,R,v),L*v)
+
+def test_Linv():
+    """Tests the Linv operator.
+    """
+    from pydft.poisson import _Linv_operator, _generate_G, _find_Gsqu
+
+    R = [[0.5,0.5,-0.5],[0.5,-0.5,0.5],[-0.5,0.5,0.5]]
+    s = [2,4,5]
+    G = _generate_G(R,s)
+    G2 = _find_Gsqu(G)
+    Linv = -np.diag(1/G2*np.linalg.det(R))
+    v = np.random.normal(0,0.1,40)
+    assert np.allclose(_Linv_operator(s,R,v),Linv*v)
+
+    R = [[1,0,0],[0,2,0],[0,0,4]]
+    s = [1,5,6]
+    G = _generate_G(R,s)
+    G2 = _find_Gsqu(G)
+    Linv = -np.diag(1/G2*np.linalg.det(R))
+    v = np.random.normal(0.1,0.5,30)
+    assert np.allclose(_Linv_operator(s,R,v),Linv*v)
+
+    R = [[2.5,2.5,-2.5],[0.5,-0.5,0.5],[-1.5,1.5,1.5]]
+    s = [10,2,6]
+    G = _generate_G(R,s)
+    G2 = _find_Gsqu(G)
+    Linv = -np.diag(1/G2*np.linalg.det(R))
+    v = np.random.normal(0,0.25,120)
+    assert np.allclose(_Linv_operator(s,R,v),Linv*v)
+    
+# def test_B():
+#     """Tests of the B operator.
+#     """
+
+#     from pydft import _B_operator, _generate_N, _generate_M
+
+#     s = [1,2,3]
+#     n = _generate_N(s)
+#     m = _generate_M(s)
+    

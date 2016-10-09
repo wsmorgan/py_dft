@@ -1,5 +1,8 @@
 # Revision History for "py_dft"
 
+## Revision 0.0.2
+- Added code and tests for the L, O, and Linv operators.
+
 ## Revision 0.0.1
 -Added poisson.py which solves the poisson equation.
 -Adde dft.py which will be the driver for our code.

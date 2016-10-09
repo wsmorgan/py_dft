@@ -178,7 +178,66 @@ def charge_dist(s,R,coeffs,sigmas):
 
     return n
 
-def poisson():
+def _O_operator(s,R,v):
+    """Applies the O operator to the vector v.
 
-    """Calculates the solution to poisson's equation.
+    Args:
+        s (list of int): The number of samples points along each 
+          basis vector.
+        R (np.ndarray): The basis vectors for the unit cell.
+        v (np.ndarray):  1D array of the vector to operate on.
+
+    Returns:
+        result (np.ndarray): The result of O operating on v.
     """
+
+    dim = np.prod(s)
+    detR = np.linalg.det(R)
+    O = np.identity(dim)*detR
+    result = O*v
+    
+    return result
+
+def _L_operator(s,R,v):
+    """Applies the L operator to the vector v.
+
+    Args:
+        s (list of int): The number of samples points along each 
+          basis vector.
+        R (np.ndarray): The basis vectors for the unit cell.
+        v (np.ndarray):  1D array of the vector to operate on.
+
+    Returns:
+        result (np.ndarray): The result of L operating on v.
+    """
+
+    G = _generate_G(R,s)
+    G2 = _find_Gsqu(G)
+    L = -np.linalg.det(R)*np.diag(G2)
+    result = L*v
+
+    return result
+
+def _Linv_operator(s,R,v):
+    """Applies the Linv operator to the vector v.
+
+    Args:
+        s (list of int): The number of samples points along each 
+          basis vector.
+        R (np.ndarray): The basis vectors for the unit cell.
+        v (np.ndarray):  1D array of the vector to operate on.
+
+    Returns:
+        result (np.ndarray): The result of Linv operating on v.
+    """
+    G = _generate_G(R,s)
+    G2 = _find_Gsqu(G)
+    Linv = -np.diag(1/G2*np.linalg.det(R))
+    result = Linv*v
+
+    return result
+
+# def poisson():
+
+#     """Calculates the solution to poisson's equation.
+#     """
