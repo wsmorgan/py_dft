@@ -4,3 +4,7 @@
 
 # py_dft
 Python implementation of a DFT code.
+
+# API Documentation
+
+Hosted on [github pages](https://wsmorgan.github.io/pydft/).

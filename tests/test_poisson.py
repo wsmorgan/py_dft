@@ -206,19 +206,19 @@ def test_O():
     s = [2,4,5]
     out = np.identity(np.prod(s))*np.linalg.det(R)
     v = np.random.normal(0,0.1,40)
-    assert np.allclose(_O_operator(s,R,v),out*v)
+    assert np.allclose(_O_operator(s,R,v),np.dot(out,v))
 
     R = [[1,0,0],[0,2,0],[0,0,4]]
     s = [1,5,6]
     out = np.identity(np.prod(s))*np.linalg.det(R)
     v = np.random.normal(0.1,0.5,30)
-    assert np.allclose(_O_operator(s,R,v),out*v)
+    assert np.allclose(_O_operator(s,R,v),np.dot(out,v))
 
     R = [[2.5,2.5,-2.5],[0.5,-0.5,0.5],[-1.5,1.5,1.5]]
     s = [10,2,6]
     out = np.identity(np.prod(s))*np.linalg.det(R)
     v = np.random.normal(0,0.25,120)
-    assert np.allclose(_O_operator(s,R,v),out*v)    
+    assert np.allclose(_O_operator(s,R,v),np.dot(out,v))
 
 def test_L():
     """Tests the L operator.
@@ -231,7 +231,7 @@ def test_L():
     G2 = _find_Gsqu(G)
     L = -np.linalg.det(R)*np.diag(G2)
     v = np.random.normal(0,0.1,40)
-    assert np.allclose(_L_operator(s,R,v),L*v)
+    assert np.allclose(_L_operator(s,R,v),np.dot(L,v))
 
     R = [[1,0,0],[0,2,0],[0,0,4]]
     s = [1,5,6]
@@ -239,7 +239,7 @@ def test_L():
     G2 = _find_Gsqu(G)
     L = -np.linalg.det(R)*np.diag(G2)
     v = np.random.normal(0.1,0.5,30)
-    assert np.allclose(_L_operator(s,R,v),L*v)
+    assert np.allclose(_L_operator(s,R,v),np.dot(L,v))
 
     R = [[2.5,2.5,-2.5],[0.5,-0.5,0.5],[-1.5,1.5,1.5]]
     s = [10,2,6]
@@ -247,7 +247,7 @@ def test_L():
     G2 = _find_Gsqu(G)
     L = -np.linalg.det(R)*np.diag(G2)
     v = np.random.normal(0,0.25,120)
-    assert np.allclose(_L_operator(s,R,v),L*v)
+    assert np.allclose(_L_operator(s,R,v),np.dot(L,v))
 
 def test_Linv():
     """Tests the Linv operator.
@@ -258,33 +258,75 @@ def test_Linv():
     s = [2,4,5]
     G = _generate_G(R,s)
     G2 = _find_Gsqu(G)
+    G2[0] = 1.0
     Linv = -np.diag(1/G2*np.linalg.det(R))
+    Linv[0][0] = -0.0
     v = np.random.normal(0,0.1,40)
-    assert np.allclose(_Linv_operator(s,R,v),Linv*v)
+    assert np.allclose(_Linv_operator(s,R,v),np.dot(Linv,v))
 
     R = [[1,0,0],[0,2,0],[0,0,4]]
     s = [1,5,6]
     G = _generate_G(R,s)
     G2 = _find_Gsqu(G)
+    G2[0] = 1.0
     Linv = -np.diag(1/G2*np.linalg.det(R))
+    Linv[0][0] = -0.0
     v = np.random.normal(0.1,0.5,30)
-    assert np.allclose(_Linv_operator(s,R,v),Linv*v)
+    assert np.allclose(_Linv_operator(s,R,v),np.dot(Linv,v))
 
     R = [[2.5,2.5,-2.5],[0.5,-0.5,0.5],[-1.5,1.5,1.5]]
     s = [10,2,6]
     G = _generate_G(R,s)
     G2 = _find_Gsqu(G)
+    G2[0] = 1.0
     Linv = -np.diag(1/G2*np.linalg.det(R))
+    Linv[0][0] = -0.0
     v = np.random.normal(0,0.25,120)
-    assert np.allclose(_Linv_operator(s,R,v),Linv*v)
+    assert np.allclose(_Linv_operator(s,R,v),np.dot(Linv,v))
     
-# def test_B():
-#     """Tests of the B operator.
-#     """
+def test_B():
+    """Tests of the B operator.
+    """
 
-#     from pydft import _B_operator, _generate_N, _generate_M
+    from pydft.poisson import _B_operator, _generate_N, _generate_M
+    import cmath
 
-#     s = [1,2,3]
-#     n = _generate_N(s)
-#     m = _generate_M(s)
+    s = [1,2,3]
+    n = _generate_N(s)
+    m = _generate_M(s)
+    mt = np.transpose(m)
+    B = np.exp(2*np.pi*cmath.sqrt(-1)*np.dot(n,np.dot(np.diag(s),mt)))
+    v = np.random.normal(0,0.5,6)
+    assert np.allclose(_B_operator(s,v),np.dot(B,v))
+
+    s = [10,2,3]
+    n = _generate_N(s)
+    m = _generate_M(s)
+    mt = np.transpose(m)
+    B = np.exp(2*np.pi*cmath.sqrt(-1)*np.dot(n,np.dot(np.diag(s),mt)))
+    v = np.random.normal(0,0.5,60)
+    assert np.allclose(_B_operator(s,v),np.dot(B,v))
+    
+    s = [5,5,2]
+    n = _generate_N(s)
+    m = _generate_M(s)
+    mt = np.transpose(m)
+    B = np.exp(2*np.pi*cmath.sqrt(-1)*np.dot(n,np.dot(np.diag(s),mt)))
+    v = np.random.normal(0,0.25,50)
+    assert np.allclose(_B_operator(s,v),np.dot(B,v))
+
+def test_Bj():
+    """Tests of the B conjugate transpose operator.
+    """
+    from pydft.poisson import _Bj_operator, _generate_N, _generate_M
+    import cmath
+
+    s = [5,5,2]
+    n = _generate_N(s)
+    m = _generate_M(s)
+    mt = np.transpose(m)
+    B = np.exp(2*np.pi*cmath.sqrt(-1)*np.dot(n,np.dot(np.diag(s),mt))/np.prod(s))
+    Bj = np.transpose(B.conj())
+    v = np.random.normal(0,0.25,50)
+    assert np.allclose(_Bj_operator(s,v),np.dot(Bj,v))
     

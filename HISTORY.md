@@ -1,5 +1,10 @@
 # Revision History for "py_dft"
 
+## Revision 0.0.3
+- Added the remaining operators and implemented the poisson solver.
+- There are still bugs in the complex conjugate of B (Bj) operator
+  that need to be solved.
+
 ## Revision 0.0.2
 - Added code and tests for the L, O, and Linv operators.
 

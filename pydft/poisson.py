@@ -1,5 +1,6 @@
 """This module contains methods used to solve the poisson equation."""
 import numpy as np
+import cmath
 
 def _generate_M(s):
     """This function finds the M matrix as described by
@@ -43,7 +44,7 @@ def _generate_N(s):
 
     return np.array(N)
 
-def _generate_r(R,s):
+def _generate_r(R, s):
     """Finds the space vector evaluation points for within the unit cell.
 
     Args:
@@ -62,7 +63,7 @@ def _generate_r(R,s):
     r = np.inner(M,SiRt)
     return r
 
-def _generate_G(R,s):
+def _generate_G(R, s):
     """Finds the G vectors representation for within the unit cell.
 
     Args:
@@ -88,7 +89,7 @@ def _find_Gsqu(G):
           the unit cell.
 
     Returns: 
-        Gsqu (np.ndarray): The list of the squared norms of the
+        Gsqu (numpy.ndarray): The list of the squared norms of the
           rows of G.
     """
 
@@ -98,7 +99,7 @@ def _find_Gsqu(G):
 
     return np.array(Gsqu)
 
-def _find_dr(r,R):
+def _find_dr(r, R):
     """Finds the distance between each sample point and the center of the cell.
 
     Args:
@@ -112,7 +113,7 @@ def _find_dr(r,R):
 
     return np.array(dr)
 
-def _gaussian(r,sigma):
+def _gaussian(r, sigma):
     """Finds the value of a gaussian for the evaluation points in r.
 
     Args:
@@ -129,19 +130,19 @@ def _gaussian(r,sigma):
 
     return g
 
-def charge_dist(s,R,coeffs,sigmas):
+def charge_dist(s, R, coeffs, sigmas):
     """Finds the charge distribution for the system represented as
     a sumattion of gaussians.
 
     Args:
         s (list of int): The number of samples points along each 
           basis vector.
-        R (np.ndarray): The basis vectors for the unit cell.
+        R (numpy.ndarray): The basis vectors for the unit cell.
         coeffs (list of float): The coefficient for each gaussian.
         sigmas (list of float): The sigma values for each gaussian.
 
     Returns:
-       n (np.ndarray): The value of the charge distribution at each 
+       n (numpy.ndarray): The value of the charge distribution at each 
          point in the space.
 
     Raises:
@@ -157,6 +158,7 @@ def charge_dist(s,R,coeffs,sigmas):
         coeff2*exp(-(r^2)/(2*sigma2^2))/(2*pi*sigma2^2)^(3/2)
         where r is the distance from each sample point to the center of
         the cell.
+
         >>> from pydft.poisson import charge_dist
         >>> import numpy as np
         >>> s = [10,5,15]
@@ -178,66 +180,142 @@ def charge_dist(s,R,coeffs,sigmas):
 
     return n
 
-def _O_operator(s,R,v):
+def _O_operator(s, R, v):
     """Applies the O operator to the vector v.
 
     Args:
         s (list of int): The number of samples points along each 
           basis vector.
-        R (np.ndarray): The basis vectors for the unit cell.
-        v (np.ndarray):  1D array of the vector to operate on.
+        R (numpy.ndarray): The basis vectors for the unit cell.
+        v (numpy.ndarray):  1D array of the vector to operate on.
 
     Returns:
-        result (np.ndarray): The result of O operating on v.
+        result (numpy.ndarray): The result of O operating on v.
     """
 
     dim = np.prod(s)
     detR = np.linalg.det(R)
     O = np.identity(dim)*detR
-    result = O*v
+    result = np.dot(O, v)
     
     return result
 
-def _L_operator(s,R,v):
+def _L_operator(s, R, v):
     """Applies the L operator to the vector v.
 
     Args:
         s (list of int): The number of samples points along each 
           basis vector.
-        R (np.ndarray): The basis vectors for the unit cell.
-        v (np.ndarray):  1D array of the vector to operate on.
+        R (numpy.ndarray): The basis vectors for the unit cell.
+        v (numpy.ndarray):  1D array of the vector to operate on.
 
     Returns:
-        result (np.ndarray): The result of L operating on v.
+        result (numpy.ndarray): The result of L operating on v.
     """
 
     G = _generate_G(R,s)
     G2 = _find_Gsqu(G)
     L = -np.linalg.det(R)*np.diag(G2)
-    result = L*v
-
+    result = np.dot(L, v)
+    
     return result
 
-def _Linv_operator(s,R,v):
+def _Linv_operator(s, R, v):
     """Applies the Linv operator to the vector v.
 
     Args:
         s (list of int): The number of samples points along each 
           basis vector.
-        R (np.ndarray): The basis vectors for the unit cell.
-        v (np.ndarray):  1D array of the vector to operate on.
+        R (numpy.ndarray): The basis vectors for the unit cell.
+        v (numpy.ndarray):  1D array of the vector to operate on.
 
     Returns:
-        result (np.ndarray): The result of Linv operating on v.
+        result (numpy.ndarray): The result of Linv operating on v.
     """
     G = _generate_G(R,s)
     G2 = _find_Gsqu(G)
+    G2[0] = 1.0
     Linv = -np.diag(1/G2*np.linalg.det(R))
-    result = Linv*v
+    Linv[0][0] = -0.
+    result = np.dot(Linv, v)
 
     return result
 
-# def poisson():
+def _B_operator(s, v):
+    """Applies the cI (I call it B) operator to the vector v.
 
-#     """Calculates the solution to poisson's equation.
-#     """
+    Args:
+        n (numpy.ndarray): The sample points in the periodic cell.
+        m (numpy.ndarray): The sample points in the unshifted cell.
+        s (list of int): The number of samples points along each 
+          basis vector.
+        v (numpy.ndarray):  1D array of the vector to operate on.
+    
+    Returns:
+        result (numpy.ndarray): The result of B operating on v.
+    """
+    n = _generate_N(s)
+    m = np.transpose(_generate_M(s))
+    B = np.exp(2*np.pi*cmath.sqrt(-1)*np.dot(n,np.dot(np.diag(s),m)))
+    result = np.dot(B,v)
+
+    return result
+
+def _Bj_operator(s, v):
+    """Applies the cI (I call it B) operator to the vector v.
+
+    Args:
+        n (numpy.ndarray): The sample points in the periodic cell.
+        m (numpy.ndarray): The sample points in the unshifted cell.
+        s (list of int): The number of samples points along each 
+          basis vector.
+        v (numpy.ndarray):  1D array of the vector to operate on.
+    
+    Returns:
+        result (numpy.ndarray): The result of B operating on v.
+    """
+    n = _generate_N(s)
+    m = np.transpose(_generate_M(s))
+    print("M",m.shape)
+    print("N",n.shape)
+    B = np.matrix(np.exp(2*np.pi*cmath.sqrt(-1)*np.dot(n,np.dot(np.diag(s),m))/np.prod(s)))
+    print("B",B.shape)
+    print("B",np.exp(2*np.pi*cmath.sqrt(-1)*np.dot(n,np.dot(np.diag(s),m))/np.prod(s)))
+    # print("Bconj",B.conj())
+    Bj = np.transpose(np.exp(-2*np.pi*cmath.sqrt(-1)*np.dot(np.dot(np.transpose(m),np.diag(s)),np.transpose(n))/np.prod(s)))
+    print("Bj",Bj.shape)
+    print("Bj",np.exp(-2*np.pi*cmath.sqrt(-1)*np.dot(np.dot(np.transpose(m),np.diag(s)),np.transpose(n))/np.prod(s)))
+    result = np.dot(Bj,v)
+
+    return result
+
+
+def poisson(s, R, n):
+    """Calculates the solution to poisson's equation.
+
+    Args:
+        s (list of int): The number of samples points along each 
+          basis vector.
+        R (numpy.ndarray): The basis vectors for the unit cell.
+        n (numpy.ndarray): The charge distribution evaluated at the
+          sample points.
+
+    Returns:
+        phi (numpy.ndaray): The value of the function phi at the
+          sample points.
+
+    
+    Examples:
+        >>> from pydft.poisson import charge_dist, poisson
+        >>> import numpy as np
+        >>> s = [10,5,15]
+        >>> R = np.array([[1,0,0],[0,1,0],[0,0,1])
+        >>> coeffs = [1, -1]
+        >>> sigmas = [0.75, 0.5]
+        >>> n = charge_dist(s,R,coeffs,sigmas)
+        >>> phi = poisson(s,R,n)
+    """
+
+    phi = _B_operator(s,_Linv_operator(s,R,-4*np.pi*_O_operator(s,R,_Bj_operator(s,n))))
+
+    return phi
