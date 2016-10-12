@@ -76,9 +76,7 @@ def run(args):
     """
 
     if args["s"]:
-        print("h")
         args["s"] = [int(i) for i in args["s"] if RepresentInt(i)]
-        print("h2")
         
     if args["crystal"] != "sc":
         raise ValueError("Only sc cubic lattice are supported at this time.")

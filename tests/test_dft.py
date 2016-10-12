@@ -2,6 +2,8 @@
 """
 import pytest
 import os
+import numpy as np
+
 # The virtual, pseudorandom port is setup as a session fixture in conftest.py
 def get_sargs(args):
     """Returns the list of arguments parsed from sys.argv.
@@ -29,9 +31,11 @@ def test_run(capfd):
     run(args)
     model = open("tests/test_output/potential_10_10_10.csv","r")
     temp = model.read()
+    temp_f = [eval(i) for i in temp.strip().split()]
     temp2 = open("potential.csv","r").read()
+    temp_f2 = [eval(i) for i in temp2.strip().split()]
     model.close()
-    assert temp == temp2
+    assert np.allclose(temp_f,temp_f2)
     os.system("rm potential.csv")
     
 

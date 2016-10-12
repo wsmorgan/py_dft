@@ -1,5 +1,9 @@
 # Revision History for "py_dft"
 
+## Revision 0.1.1
+- Fixed an error with unit tests.
+- Removed an print statement from dft.py.
+
 ## Revision 0.1.0
 - Finished implementing the poisson solver in poisson.py.
 - Fixed a bug in how Linv was calculated.
