@@ -1,5 +1,11 @@
 # Revision History for "py_dft"
 
+## Revision 0.1.0
+- Finished implementing the poisson solver in poisson.py.
+- Fixed a bug in how Linv was calculated.
+- Updated and added unit tests.
+- Finished the driver.
+
 ## Revision 0.0.4
 - Fixed the errors in B and Bj so that B(Bj(v)) = v for a simple cubic
   lattice.

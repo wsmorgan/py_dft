@@ -1,6 +1,5 @@
 """This module contains methods used to solve the poisson equation."""
 import numpy as np
-import cmath
 
 def _generate_M(s):
     """This function finds the M matrix as described by
@@ -137,8 +136,11 @@ def charge_dist(s, R, coeffs, sigmas):
     Args:
         s (list of int): The number of samples points along each 
           basis vector.
+
         R (numpy.ndarray): The basis vectors for the unit cell.
+
         coeffs (list of float): The coefficient for each gaussian.
+
         sigmas (list of float): The sigma values for each gaussian.
 
     Returns:
@@ -151,12 +153,12 @@ def charge_dist(s, R, coeffs, sigmas):
     Examples:
         The following example finds the charge distribution contsructed 
         from two gaussians in a simple cubic unit cell. The distribution 
-        is evaluated at such that there are 10 sample points in the R[0] 
-        direction, 5 in the R[1] direction, and 15 in th R[2] directon. 
+        is evaluated at such that there are `10` sample points in the `R[0]` 
+        direction, `5` in the `R[1]` direction, and `15` in th `R[2]` directon. 
         The distribution is then constructed as:
-        n(r) = coeff1*exp(-(r^2)/(2*sigma1^2))/(2*pi*sigma1^2)^(3/2) +
-        coeff2*exp(-(r^2)/(2*sigma2^2))/(2*pi*sigma2^2)^(3/2)
-        where r is the distance from each sample point to the center of
+        :math:`n(r) = coeff_{1} \\frac{ \exp(\\frac{-r^2}{2 \sigma_1^2})}{(2 \pi \sigma_1^2)^{3/2}} +
+        coeff_2 \\frac{\exp(\\frac{-r^2}{2 \sigma_2^2})}{(2 \pi \sigma_2^2)^{3/2}}`
+        where `r` is the distance from each sample point to the center of
         the cell.
 
         >>> from pydft.poisson import charge_dist
@@ -235,7 +237,7 @@ def _Linv_operator(s, R, v):
     G = _generate_G(R,s)
     G2 = _find_Gsqu(G)
     G2[0] = 1.0
-    Linv = -np.diag(1/G2*np.linalg.det(R))
+    Linv = -np.diag(1/(G2*np.linalg.det(R)))
     Linv[0][0] = -0.
     result = np.dot(Linv, v)
 
@@ -293,8 +295,10 @@ def poisson(s, R, n):
 
     Args:
         s (list of int): The number of samples points along each 
-          basis vector.
+           basis vector.
+
         R (numpy.ndarray): The basis vectors for the unit cell.
+
         n (numpy.ndarray): The charge distribution evaluated at the
           sample points.
 

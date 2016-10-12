@@ -22,5 +22,23 @@ def test_run(capfd):
     """
     from pydft.dft import run
 
-    args = {"a":1.00,"poisson":None}
+    args = {"a":1.00,"poisson":None,"s":[3,3,3],"crystal":"sc"}
     run(args)
+
+    args = {"a":3.00,"poisson":True,"s":[10,10,10],"crystal":"sc"}
+    run(args)
+    model = open("tests/test_output/potential_10_10_10.csv","r")
+    temp = model.read()
+    temp2 = open("potential.csv","r").read()
+    model.close()
+    assert temp == temp2
+    os.system("rm potential.csv")
+    
+
+    with pytest.raises(ValueError):
+        args = {"a":3.00,"poisson":True,"s":['3.5','10','10'],"crystal":"sc"}
+        run(args)
+    
+    with pytest.raises(ValueError):
+        args = {"a":1.00,"poisson":None,"s":[3,3,3],"crystal":"tet"}
+        run(args)

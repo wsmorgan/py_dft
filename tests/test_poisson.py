@@ -207,12 +207,13 @@ def test_O():
     out = np.identity(np.prod(s))*np.linalg.det(R)
     v = np.random.normal(0,0.1,40)
     assert np.allclose(_O_operator(s,R,v),np.dot(out,v))
-
+    
     R = [[1,0,0],[0,2,0],[0,0,4]]
     s = [1,5,6]
     out = np.identity(np.prod(s))*np.linalg.det(R)
     v = np.random.normal(0.1,0.5,30)
     assert np.allclose(_O_operator(s,R,v),np.dot(out,v))
+    assert np.allclose(_O_operator(s,R,v)/v,np.linalg.det(R))
 
     R = [[2.5,2.5,-2.5],[0.5,-0.5,0.5],[-1.5,1.5,1.5]]
     s = [10,2,6]
@@ -240,6 +241,7 @@ def test_L():
     L = -np.linalg.det(R)*np.diag(G2)
     v = np.random.normal(0.1,0.5,30)
     assert np.allclose(_L_operator(s,R,v),np.dot(L,v))
+    assert np.allclose(_L_operator(s,R,v)/v,-np.linalg.det(R)*G2)
 
     R = [[2.5,2.5,-2.5],[0.5,-0.5,0.5],[-1.5,1.5,1.5]]
     s = [10,2,6]
@@ -252,14 +254,14 @@ def test_L():
 def test_Linv():
     """Tests the Linv operator.
     """
-    from pydft.poisson import _Linv_operator, _generate_G, _find_Gsqu
+    from pydft.poisson import _Linv_operator, _generate_G, _find_Gsqu, _L_operator
 
     R = [[0.5,0.5,-0.5],[0.5,-0.5,0.5],[-0.5,0.5,0.5]]
     s = [2,4,5]
     G = _generate_G(R,s)
     G2 = _find_Gsqu(G)
     G2[0] = 1.0
-    Linv = -np.diag(1/G2*np.linalg.det(R))
+    Linv = -np.diag(1/(G2*np.linalg.det(R)))
     Linv[0][0] = -0.0
     v = np.random.normal(0,0.1,40)
     assert np.allclose(_Linv_operator(s,R,v),np.dot(Linv,v))
@@ -269,17 +271,18 @@ def test_Linv():
     G = _generate_G(R,s)
     G2 = _find_Gsqu(G)
     G2[0] = 1.0
-    Linv = -np.diag(1/G2*np.linalg.det(R))
+    Linv = -np.diag(1/(G2*np.linalg.det(R)))
     Linv[0][0] = -0.0
     v = np.random.normal(0.1,0.5,30)
     assert np.allclose(_Linv_operator(s,R,v),np.dot(Linv,v))
+    assert np.allclose(_L_operator(s,R,_Linv_operator(s,R,v))[1:],v[1:])
 
     R = [[2.5,2.5,-2.5],[0.5,-0.5,0.5],[-1.5,1.5,1.5]]
     s = [10,2,6]
     G = _generate_G(R,s)
     G2 = _find_Gsqu(G)
     G2[0] = 1.0
-    Linv = -np.diag(1/G2*np.linalg.det(R))
+    Linv = -np.diag(1/(G2*np.linalg.det(R)))
     Linv[0][0] = -0.0
     v = np.random.normal(0,0.25,120)
     assert np.allclose(_Linv_operator(s,R,v),np.dot(Linv,v))
@@ -337,7 +340,6 @@ def test_Bj():
     v = np.random.normal(0,0.5,6)
     Bj = np.transpose(B.conjugate())/np.prod(s)
     assert np.allclose(_Bj_operator(s,R,v),np.dot(Bj,v))
-    # assert np.allclose(_B_operator(s,R,_Bj_operator(s,R,v)),v)
 
     s = [10,2,3]
     R = [[0.5,0.5,-0.5],[0.5,-0.5,0.5],[-0.5,0.5,0.5]]
@@ -347,5 +349,21 @@ def test_Bj():
     v = np.random.normal(0,0.5,60)
     Bj = np.transpose(B.conjugate())/np.prod(s)
     assert np.allclose(_Bj_operator(s,R,v),np.dot(Bj,v))
-    # assert np.allclose(_B_operator(s,R,_Bj_operator(s,R,v)),v)
     
+def test_poission():
+    """Tests the solution to poissons equation
+    """
+
+    from pydft.poisson import poisson, charge_dist, _Bj_operator, _O_operator, _B_operator, _Linv_operator
+    R = [[6,0,0],[0,6,0],[0,0,6]]
+    s = [20,15,15]
+    coefs = [-1,1]
+    sigmas = [0.75,0.5]
+    n = charge_dist(s,R,coefs,sigmas)
+    phi = _B_operator(s,R,_Linv_operator(s,R,-4*np.pi*_O_operator(s,R,_Bj_operator(s,R,n))))
+    assert np.allclose(phi,poisson(s,R,n))
+    
+    phi = np.real(phi)
+    Unum=0.5*np.real(np.dot(_Bj_operator(s,R,phi),np.transpose(_O_operator(s,R,_Bj_operator(s,R,n)))))
+    Uanal=((1/sigmas[0]+1/sigmas[1])/2-np.sqrt(2)/np.sqrt(sigmas[0]**2+sigmas[1]**2))/np.sqrt(np.pi)
+    assert np.allclose(Unum,Uanal,atol=1e-4)
