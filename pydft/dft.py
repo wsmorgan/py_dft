@@ -14,9 +14,9 @@ def examples():
                  "dft.py 6 -s [4,4,4]",
                  "This prints the value of phi evaluated at all the sample points "
                  "to the screen")]
-    # required = ("REQUIRED: .")
-    # output = ("RETURNS: .")
-    # details = (".")
+    required = ("REQUIRED: .")
+    output = ("RETURNS: .")
+    details = (".")
     outputfmt = ("")
 
     msg.example(script, explain, contents, required, output, outputfmt, details)
@@ -24,7 +24,7 @@ def examples():
 script_options = {
     "a": dict(default=1., type=float,
               help=("The lattice parameter for the crystal structure.")),
-    "-crystal": dict(defalt="sc", type=str,
+    "-crystal": dict(default="sc", type=str,
                      help=("The type of primitive cell to use options are (sc)")),
     "-s": dict(default=[3,3,3], type=list,
               help=("The number of sampling points along each basis vector.")),

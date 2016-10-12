@@ -241,50 +241,48 @@ def _Linv_operator(s, R, v):
 
     return result
 
-def _B_operator(s, v):
+def _B_operator(s, R, v):
     """Applies the cI (I call it B) operator to the vector v.
 
     Args:
-        n (numpy.ndarray): The sample points in the periodic cell.
-        m (numpy.ndarray): The sample points in the unshifted cell.
         s (list of int): The number of samples points along each 
           basis vector.
+        R (numpy.ndarray): A matrix conaining the lattice
+          vectors. Each row is a different lattice vector.
         v (numpy.ndarray):  1D array of the vector to operate on.
     
     Returns:
         result (numpy.ndarray): The result of B operating on v.
     """
-    n = _generate_N(s)
-    m = np.transpose(_generate_M(s))
-    B = np.exp(2*np.pi*cmath.sqrt(-1)*np.dot(n,np.dot(np.diag(s),m)))
+    # n = _generate_N(s)
+    # m = np.transpose(_generate_M(s))
+    r = _generate_r(R,s)
+    G = _generate_G(R,s)
+    B = np.exp(1j*np.dot(G,np.transpose(r)))
     result = np.dot(B,v)
 
     return result
 
-def _Bj_operator(s, v):
+def _Bj_operator(s, R, v):
     """Applies the cI (I call it B) operator to the vector v.
 
     Args:
-        n (numpy.ndarray): The sample points in the periodic cell.
-        m (numpy.ndarray): The sample points in the unshifted cell.
         s (list of int): The number of samples points along each 
           basis vector.
+        R (numpy.ndarray): A matrix conaining the lattice
+          vectors. Each row is a different lattice vector.
         v (numpy.ndarray):  1D array of the vector to operate on.
     
     Returns:
         result (numpy.ndarray): The result of B operating on v.
     """
-    n = _generate_N(s)
-    m = np.transpose(_generate_M(s))
-    print("M",m.shape)
-    print("N",n.shape)
-    B = np.matrix(np.exp(2*np.pi*cmath.sqrt(-1)*np.dot(n,np.dot(np.diag(s),m))/np.prod(s)))
-    print("B",B.shape)
-    print("B",np.exp(2*np.pi*cmath.sqrt(-1)*np.dot(n,np.dot(np.diag(s),m))/np.prod(s)))
-    # print("Bconj",B.conj())
-    Bj = np.transpose(np.exp(-2*np.pi*cmath.sqrt(-1)*np.dot(np.dot(np.transpose(m),np.diag(s)),np.transpose(n))/np.prod(s)))
-    print("Bj",Bj.shape)
-    print("Bj",np.exp(-2*np.pi*cmath.sqrt(-1)*np.dot(np.dot(np.transpose(m),np.diag(s)),np.transpose(n))/np.prod(s)))
+    # n = _generate_N(s)
+    # m = np.transpose(_generate_M(s))
+    # B = np.exp(2j*np.pi*np.dot(n,np.dot(np.diag(s),m)))
+    r = _generate_r(R,s)
+    G = _generate_G(R,s)
+    B = np.exp(1j*np.dot(G,np.transpose(r)))
+    Bj = np.transpose(B.conjugate())/np.prod(s)
     result = np.dot(Bj,v)
 
     return result
@@ -316,6 +314,6 @@ def poisson(s, R, n):
         >>> phi = poisson(s,R,n)
     """
 
-    phi = _B_operator(s,_Linv_operator(s,R,-4*np.pi*_O_operator(s,R,_Bj_operator(s,n))))
+    phi = _B_operator(s,R,_Linv_operator(s,R,-4*np.pi*_O_operator(s,R,_Bj_operator(s,R,n))))
 
     return phi

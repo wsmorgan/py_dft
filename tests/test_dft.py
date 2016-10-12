@@ -22,5 +22,5 @@ def test_run(capfd):
     """
     from pydft.dft import run
 
-    args = {"N":100}
+    args = {"a":1.00,"poisson":None}
     run(args)

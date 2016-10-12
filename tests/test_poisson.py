@@ -288,45 +288,64 @@ def test_B():
     """Tests of the B operator.
     """
 
-    from pydft.poisson import _B_operator, _generate_N, _generate_M
-    import cmath
+    from pydft.poisson import _B_operator, _generate_G, _generate_r
 
     s = [1,2,3]
-    n = _generate_N(s)
-    m = _generate_M(s)
-    mt = np.transpose(m)
-    B = np.exp(2*np.pi*cmath.sqrt(-1)*np.dot(n,np.dot(np.diag(s),mt)))
+    R = [[2.5,2.5,-2.5],[0.5,-0.5,0.5],[-1.5,1.5,1.5]]
+    G = _generate_G(R,s)
+    r = _generate_r(R,s)
+    B = np.exp(1j*np.dot(G,np.transpose(r)))
     v = np.random.normal(0,0.5,6)
-    assert np.allclose(_B_operator(s,v),np.dot(B,v))
+    assert np.allclose(_B_operator(s,R,v),np.dot(B,v))
 
     s = [10,2,3]
-    n = _generate_N(s)
-    m = _generate_M(s)
-    mt = np.transpose(m)
-    B = np.exp(2*np.pi*cmath.sqrt(-1)*np.dot(n,np.dot(np.diag(s),mt)))
+    R = [[0.5,0.5,-0.5],[0.5,-0.5,0.5],[-0.5,0.5,0.5]]
+    G = _generate_G(R,s)
+    r = _generate_r(R,s)
+    B = np.exp(1j*np.dot(G,np.transpose(r)))
     v = np.random.normal(0,0.5,60)
-    assert np.allclose(_B_operator(s,v),np.dot(B,v))
+    assert np.allclose(_B_operator(s,R,v),np.dot(B,v))
     
     s = [5,5,2]
-    n = _generate_N(s)
-    m = _generate_M(s)
-    mt = np.transpose(m)
-    B = np.exp(2*np.pi*cmath.sqrt(-1)*np.dot(n,np.dot(np.diag(s),mt)))
+    R = [[6.0,0.0,0.0],[0.0,6.0,0.0],[0.0,0.0,6.0]]
+    G = _generate_G(R,s)
+    r = _generate_r(R,s)
+    B = np.exp(1j*np.dot(G,np.transpose(r)))
     v = np.random.normal(0,0.25,50)
-    assert np.allclose(_B_operator(s,v),np.dot(B,v))
+    assert np.allclose(_B_operator(s,R,v),np.dot(B,v))
 
 def test_Bj():
     """Tests of the B conjugate transpose operator.
     """
-    from pydft.poisson import _Bj_operator, _generate_N, _generate_M
-    import cmath
+    from pydft.poisson import _Bj_operator, _generate_G, _generate_r, _B_operator
 
     s = [5,5,2]
-    n = _generate_N(s)
-    m = _generate_M(s)
-    mt = np.transpose(m)
-    B = np.exp(2*np.pi*cmath.sqrt(-1)*np.dot(n,np.dot(np.diag(s),mt))/np.prod(s))
-    Bj = np.transpose(B.conj())
+    R = [[6.0,0.0,0.0],[0.0,6.0,0.0],[0.0,0.0,6.0]]
+    G = _generate_G(R,s)
+    r = _generate_r(R,s)
+    B = np.exp(1j*np.dot(G,np.transpose(r)))
     v = np.random.normal(0,0.25,50)
-    assert np.allclose(_Bj_operator(s,v),np.dot(Bj,v))
+    Bj = np.transpose(B.conjugate())/np.prod(s)
+    assert np.allclose(_Bj_operator(s,R,v),np.dot(Bj,v))
+    assert np.allclose(_B_operator(s,R,_Bj_operator(s,R,v)),v)
+
+    s = [1,2,3]
+    R = [[2.5,2.5,-2.5],[0.5,-0.5,0.5],[-1.5,1.5,1.5]]
+    G = _generate_G(R,s)
+    r = _generate_r(R,s)
+    B = np.exp(1j*np.dot(G,np.transpose(r)))
+    v = np.random.normal(0,0.5,6)
+    Bj = np.transpose(B.conjugate())/np.prod(s)
+    assert np.allclose(_Bj_operator(s,R,v),np.dot(Bj,v))
+    # assert np.allclose(_B_operator(s,R,_Bj_operator(s,R,v)),v)
+
+    s = [10,2,3]
+    R = [[0.5,0.5,-0.5],[0.5,-0.5,0.5],[-0.5,0.5,0.5]]
+    G = _generate_G(R,s)
+    r = _generate_r(R,s)
+    B = np.exp(1j*np.dot(G,np.transpose(r)))
+    v = np.random.normal(0,0.5,60)
+    Bj = np.transpose(B.conjugate())/np.prod(s)
+    assert np.allclose(_Bj_operator(s,R,v),np.dot(Bj,v))
+    # assert np.allclose(_B_operator(s,R,_Bj_operator(s,R,v)),v)
     

@@ -1,5 +1,10 @@
 # Revision History for "py_dft"
 
+## Revision 0.0.4
+- Fixed the errors in B and Bj so that B(Bj(v)) = v for a simple cubic
+  lattice.
+- Fixed other malfunctioning unit tests.
+
 ## Revision 0.0.3
 - Added the remaining operators and implemented the poisson solver.
 - There are still bugs in the complex conjugate of B (Bj) operator
