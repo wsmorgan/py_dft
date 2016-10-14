@@ -258,10 +258,10 @@ def _B_operator(s, R, v):
     """
     # n = _generate_N(s)
     # m = np.transpose(_generate_M(s))
-    r = _generate_r(R,s)
-    G = _generate_G(R,s)
-    B = np.exp(1j*np.dot(G,np.transpose(r)))
-    result = np.dot(B,v)
+    # r = _generate_r(R,s)
+    # G = _generate_G(R,s)
+    # B = np.exp(1j*np.dot(G,np.transpose(r)))
+    result = np.fft.fftn(v.reshape(s,order="F")).reshape(np.prod(s),order="F")#dot(B,v)
 
     return result
 
@@ -281,11 +281,11 @@ def _Bj_operator(s, R, v):
     # n = _generate_N(s)
     # m = np.transpose(_generate_M(s))
     # B = np.exp(2j*np.pi*np.dot(n,np.dot(np.diag(s),m)))
-    r = _generate_r(R,s)
-    G = _generate_G(R,s)
-    B = np.exp(1j*np.dot(G,np.transpose(r)))
-    Bj = np.transpose(B.conjugate())/np.prod(s)
-    result = np.dot(Bj,v)
+    # r = _generate_r(R,s)
+    # G = _generate_G(R,s)
+    # B = np.exp(1j*np.dot(G,np.transpose(r)))
+    # Bj = np.transpose(B.conjugate())/np.prod(s)
+    result = np.fft.ifftn(v.reshape(s,order="F")).reshape(np.prod(s),order="F")#np.dot(Bj,v)
 
     return result
 

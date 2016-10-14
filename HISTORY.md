@@ -1,5 +1,9 @@
 # Revision History for "py_dft"
 
+## Revision 0.1.2
+- Switched from a regular fourire transform to the fast fourier
+  transform for finding the B and Bj operators.
+
 ## Revision 0.1.1
 - Fixed an error with unit tests.
 - Removed an print statement from dft.py.

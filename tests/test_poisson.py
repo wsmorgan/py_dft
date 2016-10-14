@@ -295,27 +295,30 @@ def test_B():
 
     s = [1,2,3]
     R = [[2.5,2.5,-2.5],[0.5,-0.5,0.5],[-1.5,1.5,1.5]]
-    G = _generate_G(R,s)
-    r = _generate_r(R,s)
-    B = np.exp(1j*np.dot(G,np.transpose(r)))
+    # G = _generate_G(R,s)
+    # r = _generate_r(R,s)
+    # B = np.exp(1j*np.dot(G,np.transpose(r)))
     v = np.random.normal(0,0.5,6)
-    assert np.allclose(_B_operator(s,R,v),np.dot(B,v))
+    out = np.fft.fftn(v.reshape(s,order="F")).reshape(np.prod(s),order="F")
+    assert np.allclose(_B_operator(s,R,v), out)
 
     s = [10,2,3]
     R = [[0.5,0.5,-0.5],[0.5,-0.5,0.5],[-0.5,0.5,0.5]]
-    G = _generate_G(R,s)
-    r = _generate_r(R,s)
-    B = np.exp(1j*np.dot(G,np.transpose(r)))
+    # G = _generate_G(R,s)
+    # r = _generate_r(R,s)
+    # B = np.exp(1j*np.dot(G,np.transpose(r)))
     v = np.random.normal(0,0.5,60)
-    assert np.allclose(_B_operator(s,R,v),np.dot(B,v))
+    out = np.fft.fftn(v.reshape(s,order="F")).reshape(np.prod(s),order="F")
+    assert np.allclose(_B_operator(s,R,v),out)
     
     s = [5,5,2]
     R = [[6.0,0.0,0.0],[0.0,6.0,0.0],[0.0,0.0,6.0]]
-    G = _generate_G(R,s)
-    r = _generate_r(R,s)
-    B = np.exp(1j*np.dot(G,np.transpose(r)))
+    # G = _generate_G(R,s)
+    # r = _generate_r(R,s)
+    # B = np.exp(1j*np.dot(G,np.transpose(r)))
     v = np.random.normal(0,0.25,50)
-    assert np.allclose(_B_operator(s,R,v),np.dot(B,v))
+    out = np.fft.fftn(v.reshape(s,order="F")).reshape(np.prod(s),order="F")
+    assert np.allclose(_B_operator(s,R,v),out)
 
 def test_Bj():
     """Tests of the B conjugate transpose operator.
@@ -324,31 +327,34 @@ def test_Bj():
 
     s = [5,5,2]
     R = [[6.0,0.0,0.0],[0.0,6.0,0.0],[0.0,0.0,6.0]]
-    G = _generate_G(R,s)
-    r = _generate_r(R,s)
-    B = np.exp(1j*np.dot(G,np.transpose(r)))
+    # G = _generate_G(R,s)
+    # r = _generate_r(R,s)
+    # B = np.exp(1j*np.dot(G,np.transpose(r)))
     v = np.random.normal(0,0.25,50)
-    Bj = np.transpose(B.conjugate())/np.prod(s)
-    assert np.allclose(_Bj_operator(s,R,v),np.dot(Bj,v))
+    # Bj = np.transpose(B.conjugate())/np.prod(s)
+    out = np.fft.ifftn(v.reshape(s,order="F")).reshape(np.prod(s),order="F")
+    assert np.allclose(_Bj_operator(s,R,v),out)
     assert np.allclose(_B_operator(s,R,_Bj_operator(s,R,v)),v)
 
     s = [1,2,3]
     R = [[2.5,2.5,-2.5],[0.5,-0.5,0.5],[-1.5,1.5,1.5]]
-    G = _generate_G(R,s)
-    r = _generate_r(R,s)
-    B = np.exp(1j*np.dot(G,np.transpose(r)))
+    # G = _generate_G(R,s)
+    # r = _generate_r(R,s)
+    # B = np.exp(1j*np.dot(G,np.transpose(r)))
     v = np.random.normal(0,0.5,6)
-    Bj = np.transpose(B.conjugate())/np.prod(s)
-    assert np.allclose(_Bj_operator(s,R,v),np.dot(Bj,v))
+    # Bj = np.transpose(B.conjugate())/np.prod(s)
+    out = np.fft.ifftn(v.reshape(s,order="F")).reshape(np.prod(s),order="F")
+    assert np.allclose(_Bj_operator(s,R,v),out)
 
     s = [10,2,3]
     R = [[0.5,0.5,-0.5],[0.5,-0.5,0.5],[-0.5,0.5,0.5]]
-    G = _generate_G(R,s)
-    r = _generate_r(R,s)
-    B = np.exp(1j*np.dot(G,np.transpose(r)))
+    # G = _generate_G(R,s)
+    # r = _generate_r(R,s)
+    # B = np.exp(1j*np.dot(G,np.transpose(r)))
     v = np.random.normal(0,0.5,60)
-    Bj = np.transpose(B.conjugate())/np.prod(s)
-    assert np.allclose(_Bj_operator(s,R,v),np.dot(Bj,v))
+    # Bj = np.transpose(B.conjugate())/np.prod(s)
+    out = np.fft.ifftn(v.reshape(s,order="F")).reshape(np.prod(s),order="F")
+    assert np.allclose(_Bj_operator(s,R,v),out)
     
 def test_poission():
     """Tests the solution to poissons equation
