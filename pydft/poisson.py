@@ -148,7 +148,8 @@ def charge_dist(s, R, coeffs, sigmas):
          point in the space.
 
     Raises:
-        ValueError: if the argument is not an `int` of `float`.
+        ValueError: if the number of coefficients doesn't match the number of sigmas, i.e.,
+          len(ceoffs) != len(sigmas).
 
     Examples:
         The following example finds the charge distribution contsructed 
@@ -249,19 +250,13 @@ def _B_operator(s, R, v):
     Args:
         s (list of int): The number of samples points along each 
           basis vector.
-        R (numpy.ndarray): A matrix conaining the lattice
-          vectors. Each row is a different lattice vector.
         v (numpy.ndarray):  1D array of the vector to operate on.
     
     Returns:
         result (numpy.ndarray): The result of B operating on v.
     """
-    # n = _generate_N(s)
-    # m = np.transpose(_generate_M(s))
-    # r = _generate_r(R,s)
-    # G = _generate_G(R,s)
-    # B = np.exp(1j*np.dot(G,np.transpose(r)))
-    result = np.fft.fftn(v.reshape(s,order="F")).reshape(np.prod(s),order="F")#dot(B,v)
+    
+    result = np.fft.fftn(v.reshape(s,order="F")).reshape(np.prod(s),order="F")
 
     return result
 

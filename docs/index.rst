@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
    poisson.rst
+   ewald.rst
 
 Indices and tables
 ==================

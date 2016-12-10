@@ -1,5 +1,8 @@
 # Revision History for "py_dft"
 
+## Revision 0.2.0
+- Added ewald.py which does ewald summation.
+
 ## Revision 0.1.2
 - Switched from a regular fourire transform to the fast fourier
   transform for finding the B and Bj operators.
