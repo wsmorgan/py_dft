@@ -30,9 +30,9 @@ def _diagouter(A,B):
     Raises:
         ValueError: If the two matrices don't have the same shape.
     """
-    # if len(A) != len(B) or len(A[0]) != len(B[0]):
-    #     print(len(A),len(A[0]),len(B),len(B[0]))
-    #     raise ValueError("The two input matrices must have the same shape.")
+    if len(A) != len(B) or len(A[0]) != len(B[0]):
+        print(len(A),len(A[0]),len(B),len(B[0]))
+        raise ValueError("The two input matrices must have the same shape.")
 
     c = []
     for i in range(len(A)):
@@ -61,7 +61,7 @@ def _getE(s,R,W,V = None):
 
     from pydft.poisson import _O_operator, _L_operator, _B_operator
 
-    if V == None:
+    if V == None: #pragma: no cover
         V = _sho_V
 
     O_t = _O_operator(s,R,W)
@@ -94,7 +94,7 @@ def _Vdual(s,R,V = None):
     
     from pydft.poisson import _Bj_dag_operator, _O_operator, _Bj_operator, _generate_r, _find_dr
 
-    if V == None:
+    if V == None: #pragma: no cover
         V = _sho_V
 
     r = _generate_r(R,s)
@@ -148,7 +148,7 @@ def _H(s,R,W,V = None):
 
     from pydft.poisson import _B_operator, _B_dag_operator, _L_operator
     
-    if V == None:
+    if V == None: #pragma: no cover
         V = _sho_V
 
     LW = _L_operator(s,R,W)
@@ -176,7 +176,7 @@ def _getgrad(s,R,W,V = None):
     """
     from pydft.poisson import _O_operator
 
-    if V == None:
+    if V == None: #pragma: no cover
         V = _sho_V
 
     HW = _H(s,R,W,V=V)
@@ -188,7 +188,86 @@ def _getgrad(s,R,W,V = None):
 
     return np.array(gradW)
 
-def schrodinger(R,s,V = None):
+def _Y(s,R,W):
+    """Normalizes the input matrix.
+
+    Args:
+        s (list of int): The number of samples points along each 
+          basis vector.
+        R (numpy.ndarray): The basis vectors for the unit cell.
+        W (numpy.ndarray): A matrix containing the expansion coefficients 
+          for the wavefunctions
+
+    Returns:
+        Y (numpy.ndarray): The normalized expansion coefficients.
+    """
+    from pydft.poisson import _O_operator
+
+    Uinv = np.sqrt(np.linalg.inv(np.dot(np.conj(W.T),_O_operator(s,R,W))))
+    Y = np.dot(W,Uinv)
+
+    return Y
+
+def _sd(s,R,W, Nit=20 ,alpha=3*10**(-5), V = None, print_test = False):
+    """An implementation of the steepest descent algorithm.
+
+    Args:
+        s (list of int): The number of samples points along each 
+          basis vector.
+        R (numpy.ndarray): The basis vectors for the unit cell.
+        W (numpy.ndarray): A matrix containing the expansion coefficients 
+          for the wavefunctions
+        Nit (int, optional): The number of iterations to go through.
+        alpha (float): The weight that is to be applied to the updates 
+          of the W matrix.
+        V (function, optional): The function of the potential.
+        print_test (boolean, optional): A boolean that indicates if the
+          updated energy should be printed or not.
+
+    Returns:
+        W (numpy.ndarray): The updated coefficient matrix.
+        E (float): The energy of the new wave functions.
+    """
+    
+    if V == None: #pragma: no cover
+        V = _sho_V
+
+    for i in range(Nit):
+        dW = _getgrad(s, R, W, V=V)
+        W -= alpha*dW
+        En = _getE(s,R,W,V=V)
+        if print_test: #pragma: no cover
+            print("iteration",i,"energy",En)
+    return (W,En)
+
+def _getPsi(s,R,W,V=None):
+    """Finds the solutions to the schrodinger equation.
+
+    Args:
+        s (list of int): The number of samples points along each 
+          basis vector.
+        R (numpy.ndarray): The basis vectors for the unit cell.
+        W (numpy.ndarray): A matrix containing the expansion coefficients 
+          for the wavefunctions
+        V (function, optional): The function of the potential.
+    
+    Returns:
+        Psi (numpy.ndarray): The eigensolutions to the schrodinger equation.
+        epsilon (numpy.ndarray): The eigenvalues of the solutions.
+    """
+    
+    if V == None: #pragma: no cover
+        V = _sho_V
+
+    Y = _Y(s,R,W)
+    H =_H(s,R,Y,V=V)
+
+    mu = np.dot(np.conj(Y.T),_H(s,R,Y,V=V))
+    (epsilon, Psi) = np.linalg.eig(mu)
+
+    return (Psi, np.real(epsilon))
+
+def schrodinger(R,s, Ns = 4, Nit=400,V = None):
     """Solves the schrodinger equation for the given potential.
 
     Args:
@@ -196,13 +275,25 @@ def schrodinger(R,s,V = None):
         s (list of int): The number of samples points along each 
           basis vector.
         V (function, optional): The function that defines the potential.
+        Nit (int, optional): The number of steps for the steepest decent
+          algorithm.
+        Ns (int, optional): The number of states to be solved for.
 
     Returns:
-    
+        Psi (numpy.ndarray): The wave function solutions of to the
+          schrodinger equation.
+        epsilon (numpy.ndarray): The energy eigenfunctions for the
+          schrodigner equation.
     """
 
+    if V == None: #pragma: no cover
+        V = _sho_V
+        
+    W = np.random.normal(0,5,(np.prod(s),Ns)) + np.random.normal(0,5,(np.prod(s),Ns))*1j
+    W = _Y(s,R,W)
     
+    W = _sd(s,R,W,Nit=Nit,V=V)
 
-    
+    (Psi, epsilon) = _getPsi(s,R,W,V=V)
 
-    
+    return (Psi, epsilon)

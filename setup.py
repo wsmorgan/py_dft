@@ -18,7 +18,7 @@ except ImportError:
 
 from os import path
 setup(name='pydft',
-      version='0.3.0',
+      version='0.4.0',
       description='Numerical DFT code in python.',
       long_description= "" if not path.isfile("README.md") else read_md('README.md'),
       author='Wiley S Morgan',
