@@ -13,6 +13,7 @@ Contents:
 
    poisson.rst
    ewald.rst
+   schrodinger.rst
 
 Indices and tables
 ==================
