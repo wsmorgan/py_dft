@@ -1,5 +1,13 @@
 # Revision History for "py_dft"
 
+## Revision 0.3.0
+- Added the first three 4 sectios of assignment 2 to the
+  schrodinger.py script (_getE, _H, _getgrad, _diagprod, and
+  _diagouter).
+- Updated the _O_operator, _L_operator, _B_operator, _Bj_operator in
+  poisson.py.
+- Added _B_dagg_operator and _Bj_dagg_operator to poisson.py.
+
 ## Revision 0.2.0
 - Added ewald.py which does ewald summation.
 

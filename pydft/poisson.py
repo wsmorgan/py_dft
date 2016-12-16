@@ -190,7 +190,7 @@ def _O_operator(s, R, v):
         s (list of int): The number of samples points along each 
           basis vector.
         R (numpy.ndarray): The basis vectors for the unit cell.
-        v (numpy.ndarray):  1D array of the vector to operate on.
+        v (numpy.ndarray): array of the vector or matrix to operate on.
 
     Returns:
         result (numpy.ndarray): The result of O operating on v.
@@ -199,7 +199,13 @@ def _O_operator(s, R, v):
     dim = np.prod(s)
     detR = np.linalg.det(R)
     O = np.identity(dim)*detR
-    result = np.dot(O, v)
+    if isinstance(v[0],np.ndarray) or isinstance(v[0],list):
+        result = []
+        for Ns in v.T:
+            result.append(np.dot(O, Ns))
+        result = np.transpose(result)
+    else:
+        result = np.dot(O, v)
     
     return result
 
@@ -210,7 +216,7 @@ def _L_operator(s, R, v):
         s (list of int): The number of samples points along each 
           basis vector.
         R (numpy.ndarray): The basis vectors for the unit cell.
-        v (numpy.ndarray):  1D array of the vector to operate on.
+        v (numpy.ndarray):  array of the vector or matrix to operate on.
 
     Returns:
         result (numpy.ndarray): The result of L operating on v.
@@ -219,7 +225,13 @@ def _L_operator(s, R, v):
     G = _generate_G(R,s)
     G2 = _find_Gsqu(G)
     L = -np.linalg.det(R)*np.diag(G2)
-    result = np.dot(L, v)
+    if isinstance(v[0],np.ndarray) or isinstance(v[0],list):
+        result = []
+        for Ns in v.T:
+            result.append(np.dot(L, Ns))
+        result = np.transpose(result)
+    else:
+        result = np.dot(L, v)
     
     return result
 
@@ -250,13 +262,24 @@ def _B_operator(s, R, v):
     Args:
         s (list of int): The number of samples points along each 
           basis vector.
-        v (numpy.ndarray):  1D array of the vector to operate on.
+        R (numpy.ndarray): A matrix conaining the lattice
+          vectors. Each row is a different lattice vector.
+        v (numpy.ndarray):  array of the vector or matrix to operate on.
     
     Returns:
         result (numpy.ndarray): The result of B operating on v.
     """
     
-    result = np.fft.fftn(v.reshape(s,order="F")).reshape(np.prod(s),order="F")
+    if isinstance(v[0],np.ndarray) or isinstance(v[0],list):
+        if len(v[0]) == 1:
+            result = np.fft.fftn(v.reshape(s,order="F")).reshape(v.shape,order="F")
+        else:
+            result = []
+            for Ns in v.T:
+                result.append(np.fft.fftn(Ns.reshape(s,order="F")).reshape(np.prod(s),order="F"))
+            result = np.transpose(result)
+    else:
+        result = np.fft.fftn(v.reshape(s,order="F")).reshape(np.prod(s),order="F")
 
     return result
 
@@ -271,19 +294,76 @@ def _Bj_operator(s, R, v):
         v (numpy.ndarray):  1D array of the vector to operate on.
     
     Returns:
-        result (numpy.ndarray): The result of B operating on v.
+        result (numpy.ndarray): The result of Bj operating on v.
     """
-    # n = _generate_N(s)
-    # m = np.transpose(_generate_M(s))
-    # B = np.exp(2j*np.pi*np.dot(n,np.dot(np.diag(s),m)))
-    # r = _generate_r(R,s)
-    # G = _generate_G(R,s)
-    # B = np.exp(1j*np.dot(G,np.transpose(r)))
-    # Bj = np.transpose(B.conjugate())/np.prod(s)
-    result = np.fft.ifftn(v.reshape(s,order="F")).reshape(np.prod(s),order="F")#np.dot(Bj,v)
+
+    if isinstance(v[0],np.ndarray) or isinstance(v[0],list):
+        if len(v[0]) == 1:
+            result = np.fft.ifftn(v.reshape(s,order="F")).reshape(v.shape,order="F")
+        else:
+            result = []
+            for Ns in v.T:
+                result.append(np.fft.ifftn(Ns.reshape(s,order="F")).reshape(np.prod(s),order="F"))
+            result = np.transpose(result)
+    else:
+        result = np.fft.ifftn(v.reshape(s,order="F")).reshape(np.prod(s),order="F")
 
     return result
 
+def _B_dag_operator(s,R,v):
+    """Applies the cIdag operator to the matrix Ns.
+
+    Args:
+        s (list of int): The number of samples points along each 
+          basis vector.
+        R (numpy.ndarray): A matrix conaining the lattice
+          vectors. Each row is a different lattice vector.
+        v (numpy.ndarray):  An array containing the vector or matrix being operated on.
+    
+    Returns:
+        result (numpy.ndarray): The result of Bdag operating on Ns.
+    """
+
+    if isinstance(v[0],np.ndarray) or isinstance(v[0],list):
+        if len(v[0]) == 1:
+            result = np.fft.ifftn(v.reshape(s,order="F")).reshape(v.shape,order="F")
+        else:
+            result = []
+            for Ns in v.T:
+                result.append(np.fft.ifftn(Ns.reshape(s,order="F")).reshape(np.prod(s),order="F"))
+            result = np.transpose(result)
+
+    else:
+        result = np.fft.ifftn(v.reshape(s,order="F")).reshape(np.prod(s),order="F")
+
+    return result*np.prod(s)
+
+def _Bj_dag_operator(s, R, v):
+    """Applies the cI (I call it B) operator to the matrix Ns.
+
+    Args:
+        s (list of int): The number of samples points along each 
+          basis vector.
+        R (numpy.ndarray): A matrix conaining the lattice
+          vectors. Each row is a different lattice vector.
+        v (numpy.ndarray):  An array containing the matrix being operated on.
+    
+    Returns:
+        result (numpy.ndarray): The result of Bj operating on Ns.
+    """
+
+    if isinstance(v[0],np.ndarray) or isinstance(v[0],list):
+        if len(v[0]) == 1:
+            result = np.fft.fftn(v.reshape(s,order="F")).reshape(v.shape,order="F")
+        else:
+            result = []
+            for Ns in v.T:
+                result.append(np.fft.fftn(Ns.reshape(s,order="F")).reshape(np.prod(s),order="F"))
+            result = np.transpose(result)
+    else:
+        result = np.fft.fftn(v.reshape(s,order="F")).reshape(np.prod(s),order="F")
+
+    return result/np.prod(s)
 
 def poisson(s, R, n):
     """Calculates the solution to poisson's equation.
